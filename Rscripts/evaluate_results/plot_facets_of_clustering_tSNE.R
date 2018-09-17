@@ -30,12 +30,12 @@ datasets_filtered <- c(outer(paste0(datadir, "/sce_filtered", filterings, pctkee
                              FUN = paste, sep = "_"))
 names(datasets_filtered) <- gsub("\\.rds", "", basename(datasets_filtered))
 
-full_data <- lapply(datasets_filtered, function(x) {
-  readRDS(x)
-})
+full_data <- lapply(datasets_filtered, readRDS)
 
-datasets <- c("sce_filteredExpr10_Zhengmix4eq", "sce_filteredExpr10_Zhengmix4eq",
-              "sce_filteredExpr10_Zhengmix4uneq", "sce_filteredExpr10_Trapnell")
+datasets <- c("sce_filteredExpr10_Zhengmix4eq",
+              "sce_filteredExpr10_Zhengmix4eq",
+              "sce_filteredExpr10_Zhengmix4uneq",
+              "sce_filteredExpr10_Trapnell")
 nrun <- rep(1, 4)
 methods <- c("FlowSOM", "CIDR", "TSCAN", "SC3")
 
@@ -47,6 +47,9 @@ plot_tSNE <- function(res_summary, full_data, meth, dat, nrun){
     filter(k == length(unique(trueclass))) %>%
     select(cell, dataset, cluster, trueclass)
   sel.data <- full_data[[dat]]
+  if( is.null(sel.data) ) {
+    message('********** Unable to load data for: ', dat)
+  }
   df_to_plot <- as.data.frame(SingleCellExperiment::reducedDim(sel.data, "TSNE")) %>%
     tibble::rownames_to_column("cell") %>% 
     dplyr::left_join(res, by = "cell")
